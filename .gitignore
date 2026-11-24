@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+*.bak
+.DS_Store
+data/*.db
+data/*.db-journal
+deploy-domain-admin/
+.pytest_cache/

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Jyotish99 Ops Console</title>
+<link rel="stylesheet" href="/static/admin/admin.css"/>
+</head>
+<body>
+<div id="loginView" class="login">
+  <div class="login-card">
+    <h1>Jyotish99 Ops</h1>
+    <p>Startup control center — users, revenue, Pixel/CAPI, growth</p>
+    <input id="password" type="password" placeholder="Admin password" value=""/>
+    <button class="btn" style="width:100%" onclick="doLogin()">Enter console</button>
+    <div id="loginErr" class="err"></div>
+    <p class="muted" style="margin-top:14px">Default password: <code>astro99admin</code></p>
+  </div>
+</div>
+
+<div id="appView" class="shell hidden">
+<aside class="side">
+  <div class="brand"><div class="logo">99</div><div><b>Jyotish99 Ops</b><span>Startup console</span></div></div>
+  <div class="nav-sec">Overview</div>
+  <button data-tab="dash" class="active" onclick="showTab('dash')">Dashboard</button>
+  <button data-tab="analytics" onclick="showTab('analytics')">Analytics / Funnel</button>
+  <div class="nav-sec">CRM</div>
+  <button data-tab="users" onclick="showTab('users')">Users <span class="badge" id="bUsers">0</span></button>
+  <button data-tab="orders" onclick="showTab('orders')">Orders</button>
+  <button data-tab="support" onclick="showTab('support')">Support inbox</button>
+  <div class="nav-sec">Growth</div>
+  <button data-tab="promos" onclick="showTab('promos')">Promo codes</button>
+  <button data-tab="pushes" onclick="showTab('pushes')">Push campaigns</button>
+  <button data-tab="announce" onclick="showTab('announce')">Announcements</button>
+  <button data-tab="pixel" onclick="showTab('pixel')">Pixel / CAPI</button>
+  <div class="nav-sec">Product</div>
+  <button data-tab="plans" onclick="showTab('plans')">Plans</button>
+  <button data-tab="pandits" onclick="showTab('pandits')">Pandits</button>
+  <button data-tab="content" onclick="showTab('content')">CMS / Content</button>
+  <button data-tab="flags" onclick="showTab('flags')">Feature flags</button>
+  <div class="nav-sec">System</div>
+  <button data-tab="events" onclick="showTab('events')">Event log</button>
+  <button data-tab="audit" onclick="showTab('audit')">Audit trail</button>
+  <button data-tab="app" onclick="showTab('app')">App settings</button>
+  <div style="flex:1"></div>
+  <button onclick="logout()">Logout</button>
+</aside>
+<main class="main">
+  <div class="top">
+    <div>
+      <h2 id="pageTitle">Dashboard</h2>
+      <div class="sub" id="pageSub">Live ops snapshot</div>
+    </div>
+    <div class="row">
+      <span class="tag info mono" id="providerPill">chat</span>
+      <a class="btn sec" id="exportUsers" href="#" onclick="return exportCsv('users')">Export users</a>
+      <button class="btn sec" onclick="refreshAll()">Refresh</button>
+    </div>
+  </div>
+
+  <section id="tab-dash">
+    <div class="cards" id="statCards"></div>
+    <div class="grid2">
+      <div class="panel"><h3>7-day revenue</h3><div class="chart" id="revChart"></div></div>
+      <div class="panel"><h3>Conversion funnel</h3><div class="funnel" id="funnel"></div>
+        <div class="muted" id="kpiLine" style="margin-top:10px"></div></div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h3>Recent paid orders</h3><div id="dashOrders"></div></div>
+      <div class="panel"><h3>System health</h3><div id="dashHealth"></div></div>
+    </div>
+  </section>
+
+  <section id="tab-analytics" class="hidden">
+    <div class="cards" id="kpiCards"></div>
+    <div class="panel"><h3>Daily signups vs paid</h3><div id="seriesTable"></div></div>
+  </section>
+
+  <section id="tab-users" class="hidden">
+    <div class="panel">
+      <div class="row" style="justify-content:space-between;margin-bottom:10px">
+        <h3 style="margin:0">Customer CRM</h3>
+        <input class="search" id="userSearch" placeholder="Search phone / name" oninput="renderUsers()"/>
+      </div>
+      <div id="usersTable"></div>
+    </div>
+    <div class="panel hidden" id="userDetailPanel"><h3>User 360°</h3><div id="userDetail"></div></div>
+  </section>
+
+  <section id="tab-orders" class="hidden"><div class="panel"><div class="row" style="justify-content:space-between"><h3 style="margin:0">Orders ledger</h3><a class="btn sec" href="#" onclick="return exportCsv('orders')">Export CSV</a></div><div id="ordersTable"></div></div></section>
+
+  <section id="tab-support" class="hidden"><div class="panel"><h3>Users needing attention</h3><div id="supportTable"></div></div></section>
+
+  <section id="tab-promos" class="hidden">
+    <div class="panel">
+      <h3>Create / update promo</h3>
+      <div class="grid3">
+        <div><label>Code</label><input id="promoCode" placeholder="WELCOME50"/></div>
+        <div><label>Type</label><select id="promoType"><option value="percent">percent</option><option value="fixed">fixed ₹</option></select></div>
+        <div><label>Value</label><input id="promoValue" type="number" value="50"/></div>
+      </div>
+      <label>Applies to plan IDs (comma)</label>
+      <input id="promoPlans" value="plus,pro"/>
+      <label>Note</label>
+      <input id="promoNote" placeholder="Campaign note"/>
+      <button class="btn" onclick="savePromo()">Save promo</button>
+    </div>
+    <div class="panel"><h3>Active codes</h3><div id="promosTable"></div></div>
+  </section>
+
+  <section id="tab-pushes" class="hidden">
+    <div class="panel">
+      <h3>Compose push</h3>
+      <label>Title</label><input id="pushTitle" placeholder="Pandit ji waiting"/>
+      <label>Body</label><input id="pushBody" placeholder="Aapka message limit reset ho gaya"/>
+      <label>Segment</label>
+      <select id="pushSeg"><option value="all">All users</option><option value="free_users">Free users</option><option value="premium">Premium</option></select>
+      <button class="btn gold" onclick="sendPush()">Send campaign</button>
+      <div id="pushMsg" class="okmsg"></div>
+    </div>
+    <div class="panel"><h3>Campaign history</h3><div id="pushesTable"></div></div>
+  </section>
+
+  <section id="tab-announce" class="hidden">
+    <div class="panel">
+      <h3>Home banner / announcement</h3>
+      <label>Title</label><input id="annTitle"/>
+      <label>Body</label><input id="annBody"/>
+      <label>Placement</label><select id="annPlace"><option>home_banner</option><option>paywall</option><option>chat</option></select>
+      <button class="btn" onclick="saveAnn()">Publish</button>
+    </div>
+    <div class="panel"><div id="annTable"></div></div>
+  </section>
+
+  <section id="tab-pixel" class="hidden">
+    <div class="panel">
+      <h3>Meta Pixel</h3>
+      <div class="switch"><input type="checkbox" id="pixelEnabled"/> Enable Pixel</div>
+      <label>Pixel ID</label><input id="pixelId" placeholder="123456789012345"/>
+      <div class="grid2" id="pixelEvents"></div>
+    </div>
+    <div class="panel">
+      <h3>Conversions API (CAPI)</h3>
+      <div class="switch"><input type="checkbox" id="capiEnabled"/> Enable CAPI</div>
+      <div class="grid2">
+        <div><label>CAPI Pixel ID</label><input id="capiPixelId"/></div>
+        <div><label>Access Token</label><input id="capiToken" type="password" placeholder="leave blank to keep"/></div>
+        <div><label>Test Event Code</label><input id="capiTest"/></div>
+        <div><label>API Version</label><input id="capiVersion" value="v21.0"/></div>
+      </div>
+      <div class="row">
+        <div class="switch"><input type="checkbox" id="capiPurchase" checked/> Purchase</div>
+        <div class="switch"><input type="checkbox" id="capiReg" checked/> Registration</div>
+        <div class="switch"><input type="checkbox" id="capiCheckout" checked/> Checkout</div>
+        <div class="switch"><input type="checkbox" id="capiLead" checked/> Lead</div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" onclick="savePixelCapi()">Save</button>
+        <button class="btn gold" onclick="testCapi()">Send test Purchase</button>
+      </div>
+      <div id="pixelMsg" class="okmsg"></div><div id="pixelErr" class="err"></div>
+    </div>
+    <div class="panel">
+      <h3>Integrations</h3>
+      <div class="grid2">
+        <div>
+          <h4>CleverTap</h4>
+          <div class="switch"><input type="checkbox" id="ctEnabled"/> Enable</div>
+          <label>Account ID</label><input id="ctAccount"/>
+          <label>Token</label><input id="ctToken" type="password"/>
+          <label>Region</label><input id="ctRegion" value="in1"/>
+        </div>
+        <div>
+          <h4>Firebase / Cashfree</h4>
+          <div class="switch"><input type="checkbox" id="fbEnabled"/> Firebase</div>
+          <label>Measurement ID</label><input id="fbMeasure"/>
+          <div class="switch"><input type="checkbox" id="cfEnabled"/> Cashfree live</div>
+          <label>App ID</label><input id="cfAppId"/>
+          <label>Secret</label><input id="cfSecret" type="password"/>
+          <select id="cfEnv"><option>sandbox</option><option>production</option></select>
+        </div>
+      </div>
+      <button class="btn sec" onclick="saveIntegrations()">Save integrations</button>
+    </div>
+  </section>
+
+  <section id="tab-plans" class="hidden"><div class="panel"><div class="row" style="justify-content:space-between"><h3 style="margin:0">Plans JSON</h3><button class="btn" onclick="savePlans()">Save</button></div><textarea id="plansJson"></textarea></div></section>
+  <section id="tab-pandits" class="hidden"><div class="panel"><div id="panditsTable"></div></div></section>
+  <section id="tab-content" class="hidden">
+    <div class="panel"><div class="row" style="justify-content:space-between"><h3 style="margin:0">Suggested questions CMS</h3><button class="btn" onclick="saveSuggested()">Save</button></div>
+    <textarea id="suggestedJson"></textarea></div>
+  </section>
+  <section id="tab-flags" class="hidden"><div class="panel"><h3>Feature flags</h3><div id="flagsForm"></div><button class="btn" onclick="saveFlags()">Save flags</button></div></section>
+  <section id="tab-events" class="hidden"><div class="panel"><div id="eventsTable"></div></div></section>
+  <section id="tab-audit" class="hidden"><div class="panel"><div id="auditTable"></div></div></section>
+  <section id="tab-app" class="hidden">
+    <div class="panel">
+      <h3>App controls</h3>
+      <label>Free message limit</label><input id="freeLimit" type="number"/>
+      <div class="switch"><input type="checkbox" id="maintMode"/> Maintenance mode</div>
+      <label>Maintenance message</label><input id="maintMsg"/>
+      <label>Support WhatsApp</label><input id="supportWa"/>
+      <label>Support email</label><input id="supportEmail"/>
+      <button class="btn" onclick="saveAppSettings()">Save</button>
+      <div id="appMsg" class="okmsg"></div>
+    </div>
+  </section>
+</main>
+</div>
+<script src="/static/admin/admin.js"></script>
+</body>
+</html>

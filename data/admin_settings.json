@@ -1,0 +1,52 @@
+{
+  "pixel": {
+    "enabled": false,
+    "pixelId": "",
+    "events": {
+      "PageView": true,
+      "ViewContent": true,
+      "CompleteRegistration": true,
+      "Lead": true,
+      "InitiateCheckout": true,
+      "AddPaymentInfo": true,
+      "Purchase": true,
+      "Subscribe": true,
+      "Contact": true
+    }
+  },
+  "capi": {
+    "enabled": false,
+    "pixelId": "",
+    "accessToken": "",
+    "testEventCode": "",
+    "apiVersion": "v21.0",
+    "sendPurchase": true,
+    "sendRegistration": true,
+    "sendInitiateCheckout": true,
+    "sendLead": true
+  },
+  "clevertap": {
+    "enabled": false,
+    "accountId": "",
+    "token": "",
+    "region": "in1"
+  },
+  "firebase": {
+    "enabled": false,
+    "measurementId": "",
+    "apiKey": ""
+  },
+  "cashfree": {
+    "enabled": false,
+    "appId": "",
+    "secretKey": "",
+    "env": "sandbox"
+  },
+  "app": {
+    "freeMessageLimit": 50,
+    "maintenanceMode": false,
+    "maintenanceMessage": "App update ho rahi hai \u2014 thodi der baad try karein.",
+    "supportWhatsapp": "",
+    "supportEmail": "support@jyotish99.online"
+  }
+}

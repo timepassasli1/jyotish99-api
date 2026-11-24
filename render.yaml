@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: jyotish99-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: CHAT_PROVIDER
+        value: deepseek
+      - key: DEEPSEEK_BASE_URL
+        value: https://api.deepseek.com
+      - key: DEEPSEEK_MODEL
+        value: deepseek-chat
+      - key: ADMIN_PASSWORD
+        value: astro99admin
+      - key: SKIP_PAYWALL
+        value: "1"
+      - key: DEV_OTP_ECHO
+        value: "0"
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: PUBLIC_BASE_URL
+        sync: false
